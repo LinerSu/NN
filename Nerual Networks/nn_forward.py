@@ -43,10 +43,78 @@ def linear_activate_forward(A_prev, W, b, activation):
     cache -- a python dictionary containing "linear_cache" and "activation_cache";
              stored for computing the backward pass efficiently
     """
-
+    Z, linear_cache = linear_forward(A_prev, W, b)
     if activation == "sigmoid":
-    #TODO: implementation
+        A = sigmoid(Z)
+    elif activation == "relu":
+        A = relu(Z)
+    elif activation == "softmax":
+        A = softmax(Z)
 
+    assert (A.shape == (W.shape[0], A_prev.shape[1]))
+    cache = (linear_cache, Z)
+
+    return A, cache
+
+def nn_forward(X, parameters, activations):
+    """
+    Implement forward propagation for the NN computation
+
+    Arguments:
+    X -- data, numpy array of shape (input size, number of examples)
+    parameters -- output of initialize_parameters()
+    activations -- activation function for each layer
+
+    Returns:
+    AL -- last post-activation value
+    caches -- list of caches containing:
+                every cache of linear_activation_forward() (there are L-1 of them, indexed from 0 to L-1)
+    """
+    caches = []
+    A = X
+    L = len(parameters) // 2 # number of layers in the network
+
+    for l in range(1, L):
+        A_prev = A
+        A, cache = linear_activation_forward(A_prev, parameters['W' + str(l)], parameters['b' + str(l)], activations[l])
+        caches.append(cache)
+
+    AL, cache = linear_activation_forward(A, parameters['W' + str(L)], parameters['b' + str(L)], activations[L])
+    caches.append(cache)
+
+    assert(AL.shape == (1, X.shape[1]))
+    return AL, caches
+
+def compute_cost(AL, Y, activationL):
+    """
+    Implement the cost function.
+
+    Sigmoid:
+        -1/m * (y . log(AL) + (1 - y) . log(1 - AL))
+
+    Softmax:
+        -y . log(AL)
+
+    Arguments:
+    AL -- probability vector corresponding to your label predictions, shape (1, number of examples)
+    Y -- true "label" vector (for example: containing 0 if non-cat, 1 if cat), shape (1, number of examples)
+    activationL --- activation function for output layer
+
+    Returns:
+    cost -- cross-entropy cost
+    """
+    m = Y.shape[1]
+    cost = -1
+    if activationL == 'sigmoid':
+        cost = -1/m * (np.dot(y, np.log(AL).T) + np.dot(1 - y, np.log(1 - AL).T))
+    elif activationL == 'softmax':
+        cost = -np.dot(y, np.log(AL).T)
+
+    cost = np.squeeze(cost) # To make sure your cost's shape is what we expect
+
+    assert(cost.shape == ())
+
+    return cost
 
 
 def linear_forward_check():
