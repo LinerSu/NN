@@ -1,7 +1,8 @@
 import numpy as np
 from nn_softmax import softmax, softmax_grad
 from nn_sigmoid import sigmoid, sigmoid_grad
-from nn_relu import sigmoid, sigmoid_grad
+from nn_relu import relu, relu_grad
+from nn_tanh import tanh, tanh_grad
 
 def linear_forward(A, W, b):
     """
@@ -50,6 +51,8 @@ def linear_activate_forward(A_prev, W, b, activation):
         A = relu(Z)
     elif activation == "softmax":
         A = softmax(Z)
+    elif activation == "tanh":
+        A = tanh(Z)
 
     assert (A.shape == (W.shape[0], A_prev.shape[1]))
     cache = (linear_cache, Z)
@@ -74,13 +77,10 @@ def nn_forward(X, parameters, activations):
     A = X
     L = len(parameters) // 2 # number of layers in the network
 
-    for l in range(1, L):
+    for l in range(1, L + 1):
         A_prev = A
         A, cache = linear_activation_forward(A_prev, parameters['W' + str(l)], parameters['b' + str(l)], activations[l])
         caches.append(cache)
-
-    AL, cache = linear_activation_forward(A, parameters['W' + str(L)], parameters['b' + str(L)], activations[L])
-    caches.append(cache)
 
     assert(AL.shape == (1, X.shape[1]))
     return AL, caches
